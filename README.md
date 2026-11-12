@@ -5,20 +5,20 @@ Esta calculadora pretende mostrar el funcionamiento de un sistema distribuido y 
 ## Implementación
 La arquitectura consta de 6 contenedores: 1 contenedor proxy y 5 contenedores de servicio, entre los que habrá un líder y 4 workers.
 
-Para garantizar un sistema de liderazgo resistente se ha optado por ZooKeeper, este sistema mantiene un árbol de nodos (znodes), cada servidor es un host de Zookeeper y representa a su vez un znodo dentro de dicho árbol y por tanto dispone de un identificador. La política de elección del líder viene dada por la asignación de este cargo al nodo con menor identificador.
+Para garantizar un sistema de liderazgo resistente se ha optado por ZooKeeper, que mantiene un árbol de nodos (znodes). Cada servidor actúa como host de ZooKeeper y representa a su vez un znodo dentro de dicho árbol, disponiendo así de un identificador. La política de elección del líder consiste en asignar este cargo al nodo con menor identificador.
 
-Esta implementación implica que un contenedor de Docker consta de un servicio de ZooKeeper y un script de Python donde se implementa el cliente de dicho servicio mediante la librería KazooClient y donde se crea el znodo.
+Para ello, cada contenedor Docker ejecuta un servicio de ZooKeeper junto con un script de Python que se conecta a él mediante `KazooClient` y crea el znodo correspondiente.
 
 Para la comunicación entre contenedores utilizamos la líbreria Flask la cual permite implementar una API HTTP.
 
 Cuando un contenedor se activa, se inicia por una parte el servidor ZooKeeper y por otra un script `main.py`.
 
 Dentro de `main.py` realizamos las siguientes funciones:
-- Conexión al servidor ZooKeeper del propio contenedor
-- Creación del znodo que representa el contenedor dentro del árbol
-- Gestión de la autodestrucción
-- Reasignación de un nuevo líder.<br>
-- y luego mediante la ejecución de un segundo hilo llevamos a cabo la inicialización del servidor Flask el cual permite atender y delegar peticiones (se inicia el script `server.py`)
+- Conexión al servidor ZooKeeper del propio contenedor.
+- Creación del znodo que representa el contenedor dentro del árbol.
+- Gestión de la autodestrucción.
+- Reasignación de un nuevo líder.
+- Inicialización del servidor Flask mediante un segundo hilo, ejecutando `server.py`, que permite atender y delegar peticiones.
 
 En conclusión, un contenedor del sistema (exceptuando el proxy) es en última instancia:
 1. Host Zookeeper
