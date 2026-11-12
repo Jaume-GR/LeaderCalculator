@@ -115,11 +115,6 @@ Adicionalmente, cabe destacar la existencia de un posible cuello de botella en l
 
 Teniendo en cuenta el bajo coste computacional de las operaciones matemáticas implementadas, es razonable plantear la hipótesis de que, bajo gran carga, el líder pueda alcanzar su capacidad máxima de recepción y delegación de peticiones antes de que los *workers* saturen su capacidad de procesamiento. En consecuencia, el rendimiento global podría quedar limitado por la capacidad del líder, impidiendo aprovechar completamente el paralelismo ofrecido por los cuatro *workers*.
 
-
-<!-- Cada contenidor representa un servidor
-Cada una de les entitats calculadora s'executa sobre un servidor (contenidor)
-i cada un d'ells executa una instància de ZooKeeper i un client de Kazoo en Python conectat a la pròpia instància del contenidor -->
-
 <!-- 
 El client envia la petició a la direcció de localhost i al port 5000 de l'equip real
 El motor de docker estableix un pont entre el port 5000 de l'equip i el port 5000 del contenidor

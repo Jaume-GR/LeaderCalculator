@@ -75,9 +75,7 @@ def calculate():
     print("=============== RESPONSE ===============")
     print(f"STATUS CODE: {response.status_code}")
     print(f"{"" if ok else ""}RES: {response.json()}\n")
-
-    # check_clientID_value()
-
+    
     add_log(f"POST {response.request.url}")
     add_log(f"Status: {response.status_code}")
     add_log(f"Resultado: {res}\n")
@@ -106,15 +104,6 @@ def disable_nums():
     for key, button in button_dict.items():
         if key not in (ops or fn):
             button.configure(state="disabled")
-
-# # Verifica si la identificación del cliente en el servidor ha cambiado, solo pregunta al servidor cuando el ID no está definido
-# def check_clientID_value():
-#     global client_ID_status
-#     if client_ID_status == None or client_ID_status == "Unidentified":
-#         try:
-#             client_ID_status = client.get("http://127.0.0.1:5000/api/v1/whoami", timeout=1).json()["client_ID"]
-#             print(f"Changed Client ID value to: {client_ID_status}\n")
-#         except Exception : pass
 
 def on_open():
     try:

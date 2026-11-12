@@ -43,51 +43,18 @@ class Server:
         self.app = Flask(__name__)
         self.app.secret_key = "sk"
 
-        # self.accumulator = {}
-
-        @self.app.route("/api/v1/whoami", methods=["GET"])
-        def get_clientID():
-            # respuesta = {"client_ID" : "Unidentified" if "client_ID" not in session else session["client_ID"]}
-            # print(f"\n{respuesta}")
-            # return jsonify(respuesta)
-            pass
-
         @self.app.route("/api/v1/calc", methods=["POST"])
         def get_solution():
-            # if "client_ID" not in session:
-            #     session["client_ID"] = uuid.uuid4().hex[:8]
-            # client_ID = session["client_ID"]
-
-            # if client_ID not in self.accumulator:
-            #     self.accumulator[client_ID] = 0
-            #     self.print_accu_list()
-
-            # ok = True
-            # arg = None
-            # data = request.get_json()
-            # if data["op"] == "rst":
-            #     arg = self.accumulator[client_ID] = 0
-            # else:
-            #     ok, arg = self.command_processor(data)
-            #     if ok: self.accumulator[client_ID] = arg
-            
-            # respuesta = {"ok": ok, "result" if ok else "error" : self.accumulator[client_ID] if ok else f"Error: {arg}"
-
             try:
                 if self.leader:
+                    # Escoge un trabajador al azar y le manda la petición
                     worker_hostname = self.worker_routing()
-                    
                     resp = requests.post(f"http://{worker_hostname}/internal/worker_calc", json=request.get_json(), timeout=5)
-
                     return jsonify(resp.json()), resp.status_code
                 else:
                     return jsonify({"ok" : False, "error": f"Error: el proxy ha enviado una peticion a un worker"})
             except requests.RequestException:
                 return jsonify({"ok": False, "error": "Worker no disponible"}), 503
-
-            # print("\nCLIENT_ID:", client_ID)
-            # print(f"ACCUMUL.[{client_ID}]={self.accumulator[client_ID]}")
-
 
         @self.app.route("/internal/worker_calc", methods=["POST"])
         def worker_calc():
@@ -106,10 +73,10 @@ class Server:
                         arg = round(arg, 3)
                         if isinstance(arg, float) and arg.is_integer(): arg = int(arg)
             respuesta = {"ok": ok, "result" if ok else "error" : arg if ok else f"Error: {arg}"}
-            # log.info(f'REQUEST ({data["op"]} {" ".join(f"{x:.2f}" for x in data["args"])}) ➤ {respuesta}')
             log.info(f'REQUEST ({data["op"]} {" ".join(f"{x:.2f}" for x in data["args"])}) -> {respuesta}')
             return jsonify(respuesta)
             
+    # Obtiene los nodos candidatos y escoge uno al azar
     def worker_routing(self):
         children = self.zk.get_children("/eleccion")
         # log.info(f"all znodes {children}\n")
@@ -154,13 +121,3 @@ class Server:
             else : return (True, math.sqrt(numeros[0]))
         if op == "mean" : return (True, sum(numeros) / len(numeros))
         if op == "std"  : return (True, statistics.pstdev(numeros)) # Desviación poblacional
-
-    # def log.info_accu_list(self):
-    #     print("\nClient list\n")
-    #     print("|_CLIENT_ID_|_ACCUMULATOR_|")
-    #     for key, val in self.accumulator.items():
-    #         print(f"| {key}  |  {val:.6f}   ")
-    #     print("")
-    
-    # if __name__ == "__main__":
-    #     app.run(debug=True)
