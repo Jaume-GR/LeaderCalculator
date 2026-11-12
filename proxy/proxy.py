@@ -79,7 +79,8 @@ def proxy():
         with metlock:
             metrics["req_failed"] += 1
             metrics["resp_times"].append(perf_counter() - start)
-        return jsonify({"ok": False, "error": "Error: No hay líder asignado (None)"})
+        log.warning(f"Error al atender la peticion: No hay lider asignado (None)")
+        return jsonify({"ok": False, "error": "Error: No hay lider asignado (None)"})
     try: # Envía la petición al líder e interpreta la resolución de la petición
         r = requests.post(f"http://{target_leader}/api/v1/calc", json=request.get_json(), timeout=5)
         with metlock:
@@ -87,15 +88,17 @@ def proxy():
                 metrics["req_attended"] += 1
             else:
                 metrics["req_failed"] += 1
+                log.warning(f"Error al atender la peticion")
             metrics["req_leader"][target_leader] += 1
         return jsonify(r.json())
 
     except requests.RequestException:
         with metlock: metrics["req_failed"] += 1
+        log.warning(f"Error al atender la peticion: Lider no disponible")
         return jsonify({"ok": False, "error": "Error: Lider no disponible"})
-
-    finally:
-        if target_leader is not None:
+    
+    finally: # Al terminar calcula y almacena el tiempo de respuesta a partir del guardado inicialmente
+        if target_leader is not None: 
             with metlock: metrics["resp_times"].append(perf_counter() - start)
 
 @app.route("/api/v1/metrics", methods=["POST"])

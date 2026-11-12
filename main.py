@@ -17,7 +17,7 @@ import sys
 import os
 
 # Parámetros
-LEADER_LIFETIME = 50 # (s) Lifetime in seconds
+LEADER_LIFETIME = 20 # (s) Lifetime in seconds
 DEVIATION_RANGE = 20 # (%) Deviation range of the actual leader lifetime (± %)
 PRINT_CONSTANT_NODE_ROLE = True # Prints the role of the node on every role check iteration
 

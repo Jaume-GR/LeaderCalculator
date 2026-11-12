@@ -18,7 +18,7 @@ RESTART_METRICS_ON_EXECUTION = True # False allows to keep metrics state between
 # Parámetros principales
 client_qty = 2      # Número de clientes
 rate = 2.0          # Peticiones/segundo
-exp_duration = 10   # Duración del experimento
+exp_duration = 60   # Duración del experimento (s)
 
 # Otros 
 lbound = 0          # Límite inferior del PRNG
