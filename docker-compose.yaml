@@ -1,0 +1,119 @@
+services:
+ proxy:
+  build: ./proxy
+  container_name: proxy
+  restart: on-failure
+  environment:
+    ZK_HOSTS: "nodo1:2181,
+               nodo2:2181,
+               nodo3:2181,
+               nodo4:2181,
+               nodo5:2181"
+  ports:
+    - "5000:5000"
+  networks:
+    - zk-net
+
+ nodo1:
+  build: .
+  container_name: nodo1
+  hostname: nodo1
+  restart: on-failure
+  environment:
+    ZOO_MY_ID: 1
+    ZOO_SERVERS: "server.1=nodo1:2888:3888;2181
+                  server.2=nodo2:2888:3888;2181
+                  server.3=nodo3:2888:3888;2181
+                  server.4=nodo4:2888:3888;2181
+                  server.5=nodo5:2888:3888;2181"
+  ports:
+    - "2181:2181"
+    - "5001:5000"
+  volumes:
+    - ./data/nodo1:/data
+  networks:
+    - zk-net
+  
+ nodo2:
+  build: .
+  container_name: nodo2
+  hostname: nodo2
+  restart: on-failure
+  environment:
+    ZOO_MY_ID: 2
+    ZOO_SERVERS: "server.1=nodo1:2888:3888;2181
+                  server.2=nodo2:2888:3888;2181
+                  server.3=nodo3:2888:3888;2181
+                  server.4=nodo4:2888:3888;2181
+                  server.5=nodo5:2888:3888;2181"
+  ports:
+    - "2182:2181"
+    - "5002:5000"
+  volumes:
+    - ./data/nodo2:/data
+  networks:
+    - zk-net
+
+ nodo3:
+  build: .
+  container_name: nodo3
+  hostname: nodo3
+  restart: on-failure
+  environment:
+    ZOO_MY_ID: 3
+    ZOO_SERVERS: "server.1=nodo1:2888:3888;2181
+                  server.2=nodo2:2888:3888;2181
+                  server.3=nodo3:2888:3888;2181
+                  server.4=nodo4:2888:3888;2181
+                  server.5=nodo5:2888:3888;2181"
+  ports:
+    - "2183:2181"
+    - "5003:5000"
+  volumes:
+    - ./data/nodo3:/data
+  networks:
+    - zk-net
+
+ nodo4:
+  build: .
+  container_name: nodo4
+  hostname: nodo4
+  restart: on-failure
+  environment:
+    ZOO_MY_ID: 4
+    ZOO_SERVERS: "server.1=nodo1:2888:3888;2181
+                  server.2=nodo2:2888:3888;2181
+                  server.3=nodo3:2888:3888;2181
+                  server.4=nodo4:2888:3888;2181
+                  server.5=nodo5:2888:3888;2181"
+  ports:
+    - "2184:2181"
+    - "5004:5000"
+  volumes:
+    - ./data/nodo4:/data
+  networks:
+    - zk-net
+
+ nodo5:
+  build: .
+  container_name: nodo5
+  hostname: nodo5
+  restart: on-failure
+  environment:
+    ZOO_MY_ID: 5
+    ZOO_SERVERS: "server.1=nodo1:2888:3888;2181
+                  server.2=nodo2:2888:3888;2181
+                  server.3=nodo3:2888:3888;2181
+                  server.4=nodo4:2888:3888;2181
+                  server.5=nodo5:2888:3888;2181"
+  ports:
+    - "2185:2181"
+    - "5005:5000"
+  volumes:
+    - ./data/nodo5:/data
+  networks:
+    - zk-net
+
+networks:
+  zk-net:
+    driver: bridge
