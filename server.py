@@ -5,12 +5,12 @@
  por parte del líder a los trabajadores mediante un endpoint.
 '''
 from flask import Flask, request, jsonify, session
-import random
-import math
 import statistics
-import uuid
 import requests
 import logging
+import random
+import math
+import uuid
 import sys
 
 log = logging.getLogger("calculadora")

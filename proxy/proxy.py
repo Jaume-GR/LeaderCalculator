@@ -10,11 +10,16 @@ from kazoo.client import KazooClient, KazooState
 from kazoo.exceptions import NoNodeError
 from time import perf_counter, time, ctime
 from collections import Counter
+from statistics import median
 from threading import Lock
+from copy import deepcopy
 import requests
 import logging
 import sys
 import os
+
+# Decide si se regista None en el log de líderes y si se imprime cuando el líder se autodestruye y el proxy no apunta a nadie
+APPEND_LEADER_TRANSITION = False
 
 # Loggers
 log = logging.getLogger("proxy_app")
@@ -31,9 +36,6 @@ met_handler = logging.StreamHandler(sys.stdout)
 met_handler.setFormatter(logging.Formatter("# %(message)s"))
 metlog.addHandler(met_handler)
 
-# Decide si se regista None en el log de líderes y si se imprime cuando el líder se autodestruye y el proxy no apunta a nadie
-APPEND_LEADER_TRANSITION = False
-
 metlock = Lock()
 metrics = {
     "req_received": 0,
@@ -44,16 +46,14 @@ metrics = {
     "log_leader": []
 }
 
-#percentil 99 tiempo respuesta
-
 app = Flask(__name__)
-
 leader = None
 
 # Nos conectamos a cualquiera de los servidores de ZooKeeper
 zk = KazooClient(hosts=os.environ["ZK_HOSTS"])
 zk.start()
 
+# Detecta cambios en el znodo /leader y los registra en el historial de líderes
 @zk.DataWatch("/leader")
 def update_leader(data, stat):
     global leader
@@ -63,24 +63,24 @@ def update_leader(data, stat):
         leader = new_leader
         if new_leader is not None or APPEND_LEADER_TRANSITION:
             with metlock: metrics["log_leader"].append((time(), leader))
-            log.warning(f"(!): Lider actualizado, redireccionando peticiones a {leader}.\n")
+            log.warning(f"(!) Lider actualizado, redireccionando peticiones a {leader}.\n")
 
 @app.route("/api/v1/calc", methods=["POST"])
 def proxy():
     log.info("")
     log.info(f"Peticion recibida: {request.get_json()}")
     
-    start = perf_counter()
+    start = perf_counter() # Guarda el momento en el que se recibe la petición
     with metlock: metrics["req_received"] += 1
 
     target_leader = leader 
 
-    if target_leader is None:
+    if target_leader is None: # Si no hay líder asignado
         with metlock:
             metrics["req_failed"] += 1
             metrics["resp_times"].append(perf_counter() - start)
         return jsonify({"ok": False, "error": "Error: No hay líder asignado (None)"})
-    try:
+    try: # Envía la petición al líder e interpreta la resolución de la petición
         r = requests.post(f"http://{target_leader}/api/v1/calc", json=request.get_json(), timeout=5)
         with metlock:
             if r.status_code < 400: # Los códigos de error se encuentran por encima de 400
@@ -101,18 +101,23 @@ def proxy():
 @app.route("/api/v1/metrics", methods=["POST"])
 def print_metrics():
     met = None
-    with metlock: met = metrics
+    with metlock: met = deepcopy(metrics)
     log_leader = met["log_leader"]
     req_leader = met["req_leader"]
     resp_times = met["resp_times"]
     metlog.info("")
     metlog.info("#"*100)
+    metlog.info(f"{"#"*45} METRICS {"#"*46}")
     metlog.info("")
     metlog.info("___________Leadership timeline___________")
     for t, leader in log_leader: metlog.info(f"{ctime(t)} | {leader}")
     metlog.info("")
-    mean_resp_time = round(sum(resp_times) / len(resp_times), 3) if resp_times else 0
-    metlog.info(f"Mean Response Time = {mean_resp_time}s")
+    t = None
+    if resp_times: t = sorted(resp_times)
+    metlog.info(f"Mean Response Time = {sum(resp_times) / len(resp_times) if t else 0:.3f}s")
+    metlog.info(f"Median Response Time = {median(t) if t else 0:.3f}s")
+    metlog.info(f"P95 Response Time = {t[int(len(resp_times) * 0.95)] if t else 0:.3f}s")
+    metlog.info(f"P99 Response Time = {t[int(len(resp_times) * 0.99)] if t else 0:.3f}s")
     metlog.info("")
     metlog.info("______REQUESTS______")
     metlog.info(f"Attended: {met["req_attended"]}")

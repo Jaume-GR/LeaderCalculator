@@ -6,45 +6,34 @@ y gestiona su znodo representante.
 Gestiona también la asignación automática de los líderes,
 su autodestrucción y la inicialización del servicio calculadora.
 """
-import os
-import time
-import random
 from kazoo.client import KazooClient
-import threading
 from server import Server
-import socket
+import threading
 import logging
+import random
+import socket
+import time
 import sys
+import os
 
-log = logging.getLogger("main")
-log.setLevel(logging.INFO)
-log.propagate = False
-
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter(
-    "%(asctime)s [MAIN] %(message)s",
-    datefmt="%d/%m %H:%M:%S"
-))
-log.addHandler(handler)
-
-# etcd para redirigir las solicitudes al líder (?)
-# sino un script de python a modo de proxy.
-# posible problema de sobrecarga en esta arquitectura (?) (justificar)
-
-# Si el líder está caído no tiene por qué atender a la petición (se pueden perder peticiones),
-# sin embargo debe quedar constancia de que ha llegado una petición y no se ha podido atender,
-# quizás se pueda registrar en un 6to contenedor donde se haga el "proxy" que redirige la petición al líder de ese momento
-
+# Parámetros
 LEADER_LIFETIME = 50 # (s) Lifetime in seconds
 DEVIATION_RANGE = 20 # (%) Deviation range of the actual leader lifetime (± %)
 PRINT_CONSTANT_NODE_ROLE = True # Prints the role of the node on every role check iteration
 
+log = logging.getLogger("main")
+log.setLevel(logging.INFO)
+log.propagate = False
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("%(asctime)s [MAIN] %(message)s", datefmt="%d/%m %H:%M:%S"))
+log.addHandler(handler)
 log.info("Programa iniciado")
 
 NODE_ID = os.environ["ZOO_MY_ID"]
 node_hostname = f"{socket.gethostname()}:5000" # Obtenemos el nombre de red del nodo (contenedor)
 log.info(f"Nodo {NODE_ID} arrancando")
 
+# Esperamos unos segundos para simular una incorporación normal
 time.sleep(random.randint(5, 10))
 log.info("Intentando conectar...")
 
