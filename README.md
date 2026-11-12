@@ -14,11 +14,11 @@ Para la comunicación entre contenedores utilizamos la líbreria Flask la cual p
 Cuando un contenedor se activa, se inicia por una parte el servidor ZooKeeper y por otra un script `main.py`.
 
 Dentro de `main.py` realizamos las siguientes funciones:
-- Conexión al servidor ZooKeeper del propio contenedor
-- Creación del znodo que representa el contenedor dentro del árbol
-- Gestión de la autodestrucción
-- Reasignación de un nuevo líder.<br>
-- y luego mediante la ejecución de un segundo hilo llevamos a cabo la inicialización del servidor Flask el cual permite atender y delegar peticiones (se inicia el script `server.py`)
+- Conexión al servidor ZooKeeper del propio contenedor.
+- Creación del znodo que representa el contenedor dentro del árbol.
+- Gestión de la autodestrucción.
+- Reasignación de un nuevo líder.
+- Inicialización del servidor Flask mediante un segundo hilo, ejecutando `server.py`, que permite atender y delegar peticiones.
 
 En conclusión, un contenedor del sistema (exceptuando el proxy) es en última instancia:
 1. Host Zookeeper
