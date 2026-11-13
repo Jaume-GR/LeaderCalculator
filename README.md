@@ -73,7 +73,9 @@ Finalmente, a partir de los datos brutos, se sintetiza y se obtiene:
 - Historial de líderes
 - Distribución de la cantidad de peticiones atendidas por cada uno de los líderes proclamados hasta el momento
 
-Si bien las métricas se implementan e imprimen en el proxy, la orden de inicialización y reseteo de las mismas las proporciona el propio experimento. Esto introduce una limitación mencionada en el apartado de **Limitaciones y consideraciones**. Las ordenes se implementan mediante los endpoints `/api/v1/metrics` y `/api/v1/reset_metrics` de la API proporcionada por el servidor Flask del proxy.
+Estas métricas se imprimen en el propio log general al terminar el experimento.
+
+Si bien los métodos de gestión e impresión de las métricas se implementan en el proxy, la orden de inicialización y reseteo de las mismas las proporciona el propio experimento. Esto introduce una limitación mencionada en el apartado de **Limitaciones y consideraciones**. Las ordenes se implementan mediante los endpoints `/api/v1/metrics` y `/api/v1/reset_metrics` de la API proporcionada por el servidor Flask del proxy.
 
 En el script *client.py* las métricas se reinician al abrirse la ventana de la calculadora y se imprimen al cerrarla. Por otro lado en el caso de *threaded_clients.py* se imprimen al finalizar y se reinician de forma opcional al iniciar el mismo experimento, esto puede configurarse mediante la variable `RESTART_METRICS_ON_EXECUTION` ubicada en la parte superior. Esto puede ser interesante si se quiere tener unas métricas acumulativas realizando el experimento bajo distintas condiciones.
 
